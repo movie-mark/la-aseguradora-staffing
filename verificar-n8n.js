@@ -93,3 +93,4 @@ async function verificarConfiguracion() {
 
 // Ejecutar verificación
 verificarConfiguracion();
+

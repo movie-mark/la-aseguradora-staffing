@@ -146,3 +146,4 @@ app.get('/api/verify', authenticateToken, (req, res) => {
 app.listen(PORT, () => {
     console.log(`Servidor de autenticación corriendo en puerto ${PORT}`);
 });
+

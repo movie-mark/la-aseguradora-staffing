@@ -128,3 +128,4 @@ Si necesitas ayuda con la configuración:
 - Restringir el acceso por IP si es posible
 - Monitorear el acceso a tu instancia
 - Mantener n8n actualizado
+

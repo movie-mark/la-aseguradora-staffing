@@ -159,3 +159,4 @@ const empresa = "Tu Empresa · Tu Marca";
 4. **Mensaje se corta**
    - Verificar que no haya caracteres especiales
    - Comprobar límites de longitud en n8n
+

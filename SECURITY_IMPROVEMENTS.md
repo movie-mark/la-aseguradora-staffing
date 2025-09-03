@@ -194,3 +194,4 @@ async function sendToWebhook(cedula) {
 3. **Configurar variables de entorno**
 4. **Probar flujo completo**
 5. **Implementar HTTPS en producción**
+
