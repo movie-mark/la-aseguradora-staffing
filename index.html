@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Aseguradora - Staffing</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="auth-container" id="authContainer">
+            <div class="auth-card">
+                <div class="logo">
+                    <img src="logo.png" alt="La Aseguradora" class="logo-img">
+                    <h1>La Aseguradora</h1>
+                    <p>Sistema de Staffing</p>
+                </div>
+                
+                <form id="loginForm" class="login-form">
+                    <div class="form-group">
+                        <label for="username">Usuario</label>
+                        <input type="text" id="username" name="username" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">Contraseña</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    
+                    <button type="submit" class="login-btn">Iniciar Sesión</button>
+                </form>
+                
+                <div id="errorMessage" class="error-message" style="display: none;"></div>
+            </div>
+        </div>
+        
+        <div class="form-container" id="formContainer" style="display: none;">
+            <div class="header">
+                <h2>Cancelación Pólizas Staffing</h2>
+                <button id="logoutBtn" class="logout-btn">Cerrar Sesión</button>
+            </div>
+            
+            <div class="embedded-form">
+                <!-- Formulario de Cédula -->
+                <div id="cedulaForm" class="cedula-form">
+                    <h3>Cancelación Pólizas Staffing</h3>
+                    <p style="color: #666; margin-bottom: 20px;">
+                        Ingresa tu número de cédula para continuar con el proceso de cancelación de pólizas.
+                    </p>
+                    
+                    <form id="cedulaFormElement" class="cedula-form-element">
+                        <div class="form-group">
+                            <label for="cedula">Número de Cédula *</label>
+                            <input 
+                                type="text" 
+                                id="cedula" 
+                                name="cedula" 
+                                placeholder="Ej: 1234567890"
+                                maxlength="10"
+                                pattern="[0-9]{7,10}"
+                                required>
+                            <small class="form-help">Ingresa tu cédula sin puntos ni espacios (7-10 dígitos)</small>
+                        </div>
+                        
+                        <button type="submit" class="submit-btn" id="submitBtn">
+                            <span class="btn-text">Cancelar Póliza</span>
+                            <span class="btn-loading" style="display: none;">⏳ Procesando...</span>
+                        </button>
+                    </form>
+                    
+                    <div id="formMessage" class="form-message" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>

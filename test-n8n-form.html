@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba Formulario n8n</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        iframe {
+            width: 100%;
+            height: 600px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-buttons {
+            margin: 20px 0;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Prueba de Formulario n8n</h1>
+    
+    <div class="test-container">
+        <h2>Estado de la Configuración</h2>
+        <div id="status" class="status warning">
+            ⏳ Verificando configuración...
+        </div>
+        <div class="test-buttons">
+            <button onclick="testFormUrl()">🔄 Probar URL</button>
+            <button onclick="testIframe()">🖼️ Probar Iframe</button>
+            <button onclick="checkHeaders()">📋 Verificar Cabeceras</button>
+        </div>
+    </div>
+    
+    <div class="test-container">
+        <h2>Formulario Embebido</h2>
+        <iframe id="n8nForm" src=""></iframe>
+    </div>
+    
+    <div class="test-container">
+        <h2>Log de Pruebas</h2>
+        <div id="log" style="background: #f8f9fa; padding: 15px; border-radius: 5px; font-family: monospace; white-space: pre-wrap;"></div>
+    </div>
+
+    <script>
+        const formUrl = 'https://strategic-masterminds.app.n8n.cloud/form/4627dba9-38c7-49d4-b9a2-ff18ae79b1d8';
+        const statusDiv = document.getElementById('status');
+        const logDiv = document.getElementById('log');
+        const iframe = document.getElementById('n8nForm');
+        
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.textContent += `[${timestamp}] ${message}\n`;
+            console.log(message);
+        }
+        
+        function updateStatus(message, type = 'warning') {
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+        }
+        
+        async function testFormUrl() {
+            log('🔄 Probando URL del formulario...');
+            updateStatus('⏳ Probando URL...', 'warning');
+            
+            try {
+                const response = await fetch(formUrl, { mode: 'no-cors' });
+                log('✅ URL accesible (sin CORS)');
+                updateStatus('✅ URL del formulario es accesible', 'success');
+            } catch (error) {
+                log('❌ Error al acceder a la URL: ' + error.message);
+                updateStatus('❌ URL no accesible', 'error');
+            }
+        }
+        
+        async function checkHeaders() {
+            log('📋 Verificando cabeceras HTTP...');
+            updateStatus('⏳ Verificando cabeceras...', 'warning');
+            
+            try {
+                const response = await fetch(formUrl, { method: 'HEAD' });
+                const headers = response.headers;
+                
+                log('📋 Cabeceras recibidas:');
+                for (let [key, value] of headers.entries()) {
+                    log(`  ${key}: ${value}`);
+                }
+                
+                const frameOptions = headers.get('X-Frame-Options');
+                if (frameOptions) {
+                    log(`❌ X-Frame-Options encontrado: ${frameOptions}`);
+                    updateStatus('❌ X-Frame-Options bloquea iframes', 'error');
+                } else {
+                    log('✅ No se encontró X-Frame-Options');
+                    updateStatus('✅ Cabeceras OK para iframe', 'success');
+                }
+            } catch (error) {
+                log('❌ Error al verificar cabeceras: ' + error.message);
+                updateStatus('❌ Error al verificar cabeceras', 'error');
+            }
+        }
+        
+        function testIframe() {
+            log('🖼️ Probando carga en iframe...');
+            updateStatus('⏳ Cargando iframe...', 'warning');
+            
+            iframe.src = formUrl;
+            
+            const timeout = setTimeout(() => {
+                log('⏰ Timeout: iframe no se cargó en 10 segundos');
+                updateStatus('❌ Iframe no se cargó (timeout)', 'error');
+            }, 10000);
+            
+            iframe.onload = function() {
+                clearTimeout(timeout);
+                log('✅ Iframe cargado correctamente');
+                updateStatus('✅ Formulario embebido funcionando', 'success');
+            };
+            
+            iframe.onerror = function() {
+                clearTimeout(timeout);
+                log('❌ Error al cargar iframe');
+                updateStatus('❌ Error al cargar iframe', 'error');
+            };
+        }
+        
+        // Ejecutar pruebas automáticamente al cargar
+        window.onload = function() {
+            log('🚀 Iniciando pruebas automáticas...');
+            setTimeout(testFormUrl, 1000);
+            setTimeout(checkHeaders, 2000);
+            setTimeout(testIframe, 3000);
+        };
+    </script>
+</body>
+</html>

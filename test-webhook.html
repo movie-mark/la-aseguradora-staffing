@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba Webhook n8n</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button {
+            background: #ff6b35;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #e55a2b;
+        }
+        input {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin: 5px;
+            width: 200px;
+        }
+        .log {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Prueba de Webhook n8n</h1>
+    
+    <div class="test-container">
+        <h2>Configuración del Webhook</h2>
+        <div class="status info">
+            <strong>URL:</strong> https://strategic-masterminds.app.n8n.cloud/webhook-test/3f4ff2a4-23e8-434d-82d6-4a50ac58a7ec
+        </div>
+        
+        <h3>Datos de Prueba</h3>
+        <input type="text" id="cedula" placeholder="Cédula (ej: 1234567890)" value="1234567890">
+        <input type="text" id="username" placeholder="Usuario" value="admin">
+        
+        <div style="margin-top: 15px;">
+            <button onclick="setTestData('success')">✅ Datos de Éxito</button>
+            <button onclick="setTestData('error')">❌ Datos de Error</button>
+        </div>
+        
+        <div style="margin-top: 15px;">
+            <button onclick="testWebhook()">🚀 Probar Webhook</button>
+            <button onclick="testMultiple()">🔄 Prueba Múltiple</button>
+            <button onclick="clearLog()">🗑️ Limpiar Log</button>
+        </div>
+    </div>
+    
+    <div class="test-container">
+        <h2>Resultado de la Prueba</h2>
+        <div id="result" class="status info">
+            ⏳ Esperando prueba...
+        </div>
+    </div>
+    
+    <div class="test-container">
+        <h2>Log de Pruebas</h2>
+        <div id="log" class="log">Iniciando pruebas de webhook...\n</div>
+    </div>
+
+    <script>
+        const webhookUrl = 'https://strategic-masterminds.app.n8n.cloud/webhook-test/3f4ff2a4-23e8-434d-82d6-4a50ac58a7ec';
+        
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logDiv = document.getElementById('log');
+            logDiv.textContent += `[${timestamp}] ${message}\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+        
+        function updateResult(message, type = 'info') {
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = message;
+            resultDiv.className = `status ${type}`;
+        }
+        
+        async function testWebhook() {
+            const cedula = document.getElementById('cedula').value;
+            const username = document.getElementById('username').value;
+            
+            if (!cedula || !username) {
+                updateResult('❌ Por favor completa todos los campos', 'error');
+                return;
+            }
+            
+            log('🚀 Iniciando prueba de webhook...');
+            updateResult('⏳ Enviando datos al webhook...', 'info');
+            
+            const payload = {
+                event: 'cedula_consultation',
+                timestamp: new Date().toISOString(),
+                username: username,
+                cedula: cedula,
+                session_id: 'test_' + Date.now()
+            };
+            
+            log(`📤 Enviando payload: ${JSON.stringify(payload, null, 2)}`);
+            
+            try {
+                const startTime = Date.now();
+                
+                const response = await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                const endTime = Date.now();
+                const responseTime = endTime - startTime;
+                
+                log(`📥 Respuesta recibida en ${responseTime}ms`);
+                log(`📊 Status: ${response.status} ${response.statusText}`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log(`✅ Datos recibidos: ${JSON.stringify(data, null, 2)}`);
+                    updateResult(`✅ Webhook funcionando correctamente (${responseTime}ms)`, 'success');
+                } else {
+                    const errorText = await response.text();
+                    log(`❌ Error: ${errorText}`);
+                    updateResult(`❌ Error ${response.status}: ${response.statusText}`, 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ Error de conexión: ${error.message}`);
+                updateResult(`❌ Error de conexión: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testMultiple() {
+            log('🔄 Iniciando prueba múltiple...');
+            updateResult('⏳ Ejecutando pruebas múltiples...', 'info');
+            
+            const testCases = [
+                { cedula: '1234567890', username: 'admin' },
+                { cedula: '9876543210', username: 'staff' },
+                { cedula: '5555555555', username: 'user' }
+            ];
+            
+            let successCount = 0;
+            let errorCount = 0;
+            
+            for (let i = 0; i < testCases.length; i++) {
+                const testCase = testCases[i];
+                log(`\n📋 Prueba ${i + 1}/${testCases.length}: ${testCase.username} - ${testCase.cedula}`);
+                
+                const payload = {
+                    event: 'cedula_consultation',
+                    timestamp: new Date().toISOString(),
+                    username: testCase.username,
+                    cedula: testCase.cedula,
+                    session_id: `test_${i}_${Date.now()}`
+                };
+                
+                try {
+                    const response = await fetch(webhookUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    if (response.ok) {
+                        log(`✅ Prueba ${i + 1} exitosa`);
+                        successCount++;
+                    } else {
+                        log(`❌ Prueba ${i + 1} falló: ${response.status}`);
+                        errorCount++;
+                    }
+                    
+                } catch (error) {
+                    log(`❌ Prueba ${i + 1} error: ${error.message}`);
+                    errorCount++;
+                }
+                
+                // Esperar 1 segundo entre pruebas
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+            
+            log(`\n📊 Resumen: ${successCount} exitosas, ${errorCount} fallidas`);
+            updateResult(`📊 Pruebas completadas: ${successCount} exitosas, ${errorCount} fallidas`, 
+                        errorCount === 0 ? 'success' : 'error');
+        }
+        
+        function clearLog() {
+            document.getElementById('log').textContent = 'Log limpiado...\n';
+            updateResult('⏳ Esperando prueba...', 'info');
+        }
+        
+        // Función para configurar datos de prueba
+        function setTestData(type) {
+            if (type === 'success') {
+                document.getElementById('cedula').value = '1234567890';
+                document.getElementById('username').value = 'admin';
+                log('✅ Datos configurados para prueba de éxito');
+            } else if (type === 'error') {
+                document.getElementById('cedula').value = '9999999999';
+                document.getElementById('username').value = 'admin';
+                log('❌ Datos configurados para prueba de error');
+            }
+        }
+        
+        // Prueba automática al cargar
+        window.onload = function() {
+            log('🎯 Página de prueba cargada');
+            log('💡 Haz clic en "Probar Webhook" para enviar datos a n8n');
+            log('💡 Usa los botones de datos para configurar pruebas específicas');
+        };
+    </script>
+</body>
+</html>

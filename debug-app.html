@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug App Principal - La Aseguradora</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .debug-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        button {
+            background: #ff6b35;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background: #e55a2b;
+        }
+        .log {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Debug App Principal</h1>
+    
+    <div class="debug-container">
+        <h2>Pruebas de la Aplicación Principal</h2>
+        <p>Esta página simula exactamente el comportamiento de la aplicación principal.</p>
+        
+        <div>
+            <button onclick="testSuccess()">✅ Probar Éxito (1234567890)</button>
+            <button onclick="testError()">❌ Probar Error (9999999999)</button>
+            <button onclick="testCustom()">🔧 Probar Personalizado</button>
+            <button onclick="clearLog()">🗑️ Limpiar Log</button>
+        </div>
+        
+        <div style="margin-top: 15px;">
+            <input type="text" id="customCedula" placeholder="Cédula personalizada" value="1234567890">
+            <button onclick="testCustom()">Probar</button>
+        </div>
+    </div>
+    
+    <div class="debug-container">
+        <h2>Resultado</h2>
+        <div id="result" class="status info">Esperando prueba...</div>
+    </div>
+    
+    <div class="debug-container">
+        <h2>Log de Debug</h2>
+        <div id="log" class="log">Iniciando debug de la app principal...\n</div>
+    </div>
+
+    <script>
+        // Simular localStorage
+        localStorage.setItem('username', 'admin');
+        localStorage.setItem('session_id', 'debug_session_' + Date.now());
+        
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logDiv = document.getElementById('log');
+            logDiv.textContent += `[${timestamp}] ${message}\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+        
+        function updateResult(message, type = 'info') {
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = message;
+            resultDiv.className = `status ${type}`;
+        }
+        
+        // Copiar las funciones exactas de la app principal
+        function generateSessionId() {
+            return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
+        
+        async function sendToWebhook(cedula) {
+            const webhookUrl = 'https://strategic-masterminds.app.n8n.cloud/webhook-test/3f4ff2a4-23e8-434d-82d6-4a50ac58a7ec';
+            
+            const payload = {
+                event: 'cedula_consultation',
+                timestamp: new Date().toISOString(),
+                username: localStorage.getItem('username'),
+                cedula: cedula,
+                session_id: localStorage.getItem('session_id') || generateSessionId()
+            };
+            
+            log('📤 Enviando payload: ' + JSON.stringify(payload));
+            
+            try {
+                const response = await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                log('📥 Respuesta recibida: ' + response.status + ' ' + response.statusText);
+                
+                let responseData;
+                try {
+                    responseData = await response.json();
+                    log('📋 Datos de respuesta: ' + JSON.stringify(responseData));
+                } catch (parseError) {
+                    log('❌ Error parseando JSON: ' + parseError.message);
+                    const textResponse = await response.text();
+                    log('📄 Respuesta como texto: ' + textResponse);
+                    responseData = { message: textResponse };
+                }
+                
+                const isSuccess = response.ok;
+                
+                const result = {
+                    success: isSuccess,
+                    message: responseData.message || (isSuccess ? 'Póliza procesada correctamente' : 'Error al procesar la cédula'),
+                    data: responseData,
+                    status: response.status
+                };
+                
+                log('🎯 Resultado final: ' + JSON.stringify(result));
+                return result;
+                
+            } catch (error) {
+                log('❌ Error en fetch: ' + error.message);
+                throw error;
+            }
+        }
+        
+        function showSuccessMessage(htmlMessage) {
+            log('✅ Mostrando mensaje de éxito: ' + htmlMessage);
+            updateResult('✅ ÉXITO: ' + htmlMessage.replace(/<[^>]*>/g, ''), 'success');
+        }
+        
+        function showErrorMessage(htmlMessage) {
+            log('❌ Mostrando mensaje de error: ' + htmlMessage);
+            updateResult('❌ ERROR: ' + htmlMessage.replace(/<[^>]*>/g, ''), 'error');
+        }
+        
+        async function testSuccess() {
+            await testWebhook('1234567890');
+        }
+        
+        async function testError() {
+            await testWebhook('9999999999');
+        }
+        
+        async function testCustom() {
+            const cedula = document.getElementById('customCedula').value;
+            await testWebhook(cedula);
+        }
+        
+        async function testWebhook(cedula) {
+            log('🚀 Iniciando prueba con cédula: ' + cedula);
+            updateResult('⏳ Procesando...', 'info');
+            
+            try {
+                const result = await sendToWebhook(cedula);
+                
+                log('🎯 Resultado del webhook: ' + JSON.stringify(result));
+                
+                if (result.message && result.message.trim() !== '') {
+                    if (result.success) {
+                        log('✅ Mostrando mensaje de éxito: ' + result.message);
+                        showSuccessMessage(result.message);
+                    } else {
+                        log('❌ Mostrando mensaje de error: ' + result.message);
+                        showErrorMessage(result.message);
+                    }
+                } else {
+                    log('⚠️ No hay mensaje, usando fallback');
+                    if (result.success) {
+                        showSuccessMessage('Póliza procesada correctamente');
+                    } else {
+                        showErrorMessage('Error al procesar la cédula');
+                    }
+                }
+                
+            } catch (error) {
+                log('💥 Error en el proceso: ' + error.message);
+                updateResult('❌ Error: ' + error.message, 'error');
+            }
+        }
+        
+        function clearLog() {
+            document.getElementById('log').textContent = 'Log limpiado...\n';
+            updateResult('Esperando prueba...', 'info');
+        }
+        
+        // Auto-iniciar
+        window.onload = function() {
+            log('🎯 Debug de app principal iniciado');
+            log('💡 Usa los botones para probar diferentes escenarios');
+        };
+    </script>
+</body>
+</html>

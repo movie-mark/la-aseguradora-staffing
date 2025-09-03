@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Webhook - La Aseguradora</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .debug-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button {
+            background: #ff6b35;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background: #e55a2b;
+        }
+        input {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin: 5px;
+            width: 200px;
+        }
+        .log {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+        }
+        .json-display {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .step {
+            margin: 20px 0;
+            padding: 15px;
+            border-left: 4px solid #ff6b35;
+            background: #fff;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Debug Webhook - La Aseguradora</h1>
+    
+    <div class="debug-container">
+        <h2>Configuración</h2>
+        <div class="status info">
+            <strong>Webhook URL:</strong> https://strategic-masterminds.app.n8n.cloud/webhook-test/3f4ff2a4-23e8-434d-82d6-4a50ac58a7ec
+        </div>
+        
+        <h3>Datos de Prueba</h3>
+        <input type="text" id="cedula" placeholder="Cédula" value="1234567890">
+        <input type="text" id="username" placeholder="Usuario" value="admin">
+        
+        <div>
+            <button onclick="testSuccess()">✅ Probar Éxito</button>
+            <button onclick="testError()">❌ Probar Error</button>
+            <button onclick="testCustom()">🔧 Probar Personalizado</button>
+            <button onclick="clearDebug()">🗑️ Limpiar</button>
+        </div>
+    </div>
+    
+    <div class="debug-container">
+        <h2>Paso a Paso del Proceso</h2>
+        
+        <div class="step">
+            <h4>1. Payload Enviado</h4>
+            <div id="payloadDisplay" class="json-display">Esperando envío...</div>
+        </div>
+        
+        <div class="step">
+            <h4>2. Respuesta del Webhook</h4>
+            <div id="responseDisplay" class="json-display">Esperando respuesta...</div>
+        </div>
+        
+        <div class="step">
+            <h4>3. Procesamiento del Resultado</h4>
+            <div id="resultDisplay" class="json-display">Esperando procesamiento...</div>
+        </div>
+        
+        <div class="step">
+            <h4>4. Mensaje Final Mostrado</h4>
+            <div id="messageDisplay" class="json-display">Esperando mensaje...</div>
+        </div>
+    </div>
+    
+    <div class="debug-container">
+        <h2>Log de Debug</h2>
+        <div id="debugLog" class="log">Iniciando debug...\n</div>
+    </div>
+
+    <script>
+        const webhookUrl = 'https://strategic-masterminds.app.n8n.cloud/webhook-test/3f4ff2a4-23e8-434d-82d6-4a50ac58a7ec';
+        
+        function debugLog(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logDiv = document.getElementById('debugLog');
+            logDiv.textContent += `[${timestamp}] ${message}\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+        
+        function displayJSON(elementId, data) {
+            const element = document.getElementById(elementId);
+            element.textContent = JSON.stringify(data, null, 2);
+        }
+        
+        async function testSuccess() {
+            document.getElementById('cedula').value = '1234567890';
+            document.getElementById('username').value = 'admin';
+            await testWebhook();
+        }
+        
+        async function testError() {
+            document.getElementById('cedula').value = '9999999999';
+            document.getElementById('username').value = 'admin';
+            await testWebhook();
+        }
+        
+        async function testCustom() {
+            await testWebhook();
+        }
+        
+        async function testWebhook() {
+            const cedula = document.getElementById('cedula').value;
+            const username = document.getElementById('username').value;
+            
+            debugLog('🚀 Iniciando prueba de webhook...');
+            
+            // Paso 1: Crear payload
+            const payload = {
+                event: 'cedula_consultation',
+                timestamp: new Date().toISOString(),
+                username: username,
+                cedula: cedula,
+                session_id: 'debug_' + Date.now()
+            };
+            
+            displayJSON('payloadDisplay', payload);
+            debugLog('📤 Payload creado: ' + JSON.stringify(payload));
+            
+            try {
+                // Paso 2: Enviar al webhook
+                debugLog('📡 Enviando al webhook...');
+                const response = await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                debugLog(`📥 Respuesta recibida: ${response.status} ${response.statusText}`);
+                
+                // Paso 3: Procesar respuesta
+                let responseData;
+                if (response.ok) {
+                    responseData = await response.json();
+                    debugLog('✅ Respuesta exitosa: ' + JSON.stringify(responseData));
+                } else {
+                    responseData = await response.json().catch(() => ({}));
+                    debugLog('❌ Respuesta de error: ' + JSON.stringify(responseData));
+                }
+                
+                displayJSON('responseDisplay', responseData);
+                
+                // Paso 4: Procesar resultado (igual que en la app principal)
+                const result = {
+                    success: responseData.success !== false,
+                    message: responseData.message || (response.ok ? 'Póliza procesada correctamente' : `Error ${response.status}`),
+                    data: responseData
+                };
+                
+                displayJSON('resultDisplay', result);
+                debugLog('🔄 Resultado procesado: ' + JSON.stringify(result));
+                
+                // Paso 5: Simular mensaje final
+                const finalMessage = {
+                    type: result.success ? 'success' : 'error',
+                    message: result.message,
+                    html: result.message
+                };
+                
+                displayJSON('messageDisplay', finalMessage);
+                debugLog('💬 Mensaje final: ' + JSON.stringify(finalMessage));
+                
+                // Mostrar preview del mensaje
+                showMessagePreview(result);
+                
+            } catch (error) {
+                debugLog('❌ Error: ' + error.message);
+                displayJSON('responseDisplay', { error: error.message });
+                displayJSON('resultDisplay', { success: false, message: 'Error de conexión' });
+                displayJSON('messageDisplay', { type: 'error', message: 'Error de conexión' });
+            }
+        }
+        
+        function showMessagePreview(result) {
+            const previewDiv = document.createElement('div');
+            previewDiv.className = 'debug-container';
+            previewDiv.innerHTML = `
+                <h3>👁️ Preview del Mensaje</h3>
+                <div style="border: 2px solid ${result.success ? '#28a745' : '#dc3545'}; padding: 20px; border-radius: 8px; background: ${result.success ? '#d4edda' : '#f8d7da'};">
+                    <div style="font-size: 2rem; margin-bottom: 15px;">${result.success ? '✅' : '❌'}</div>
+                    <div style="color: ${result.success ? '#155724' : '#721c24'}; line-height: 1.6;">
+                        ${result.message}
+                    </div>
+                </div>
+            `;
+            
+            // Remover preview anterior si existe
+            const existingPreview = document.querySelector('.message-preview');
+            if (existingPreview) {
+                existingPreview.remove();
+            }
+            
+            previewDiv.classList.add('message-preview');
+            document.body.appendChild(previewDiv);
+        }
+        
+        function clearDebug() {
+            document.getElementById('payloadDisplay').textContent = 'Esperando envío...';
+            document.getElementById('responseDisplay').textContent = 'Esperando respuesta...';
+            document.getElementById('resultDisplay').textContent = 'Esperando procesamiento...';
+            document.getElementById('messageDisplay').textContent = 'Esperando mensaje...';
+            document.getElementById('debugLog').textContent = 'Log limpiado...\n';
+            
+            const existingPreview = document.querySelector('.message-preview');
+            if (existingPreview) {
+                existingPreview.remove();
+            }
+        }
+        
+        // Auto-iniciar
+        window.onload = function() {
+            debugLog('🎯 Debug iniciado');
+            debugLog('💡 Usa los botones para probar diferentes escenarios');
+        };
+    </script>
+</body>
+</html>
