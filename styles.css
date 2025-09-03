@@ -76,20 +76,6 @@ body {
     object-fit: contain;
 }
 
-.logo-svg {
-    margin-bottom: 15px;
-    display: flex;
-    justify-content: center;
-}
-
-.logo-svg svg {
-    transition: transform 0.3s ease;
-}
-
-.logo-svg svg:hover {
-    transform: scale(1.05);
-}
-
 .logo h1 {
     color: #333;
     font-size: 2.5rem;
@@ -238,35 +224,6 @@ body {
     padding: 30px;
     background: #f8f9fa;
     position: relative;
-}
-
-.embedded-form iframe {
-    border-radius: 10px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    background: white;
-    display: block;
-}
-
-.iframe-loading {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-    z-index: 10;
-}
-
-.iframe-loading p {
-    color: #667eea;
-    font-weight: 600;
-    margin: 0;
-}
-
-.iframe-loading.hidden {
-    display: none;
 }
 
 /* Estilos para el formulario de cédula */
@@ -434,19 +391,6 @@ body {
     .embedded-form {
         padding: 20px;
     }
-    
-    .embedded-form iframe {
-        height: 600px !important;
-    }
-    
-    .form-row {
-        flex-direction: column;
-        gap: 0;
-    }
-    
-    .demo-form {
-        padding: 20px;
-    }
 }
 
 @media (max-width: 480px) {
@@ -464,10 +408,6 @@ body {
     
     .login-btn {
         padding: 12px;
-    }
-    
-    .embedded-form iframe {
-        height: 500px !important;
     }
 }
 

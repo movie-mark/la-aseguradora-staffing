@@ -61,9 +61,6 @@ const webhookUrl = 'https://strategic-masterminds.app.n8n.cloud/webhook/3f4ff2a4
    - HTTP Method: POST
    - Path: `/webhook/3f4ff2a4-23e8-434d-82d6-4a50ac58a7ec`
    - Response Mode: "On Received"
-3. **Prueba el webhook** con: 
-   - `http://localhost:8000/test-webhook.html` - Pruebas básicas
-   - `http://localhost:8000/debug-webhook.html` - Debug detallado
 
 ### Estructura del Webhook en n8n
 
@@ -112,19 +109,6 @@ const validUsers = {
     'tu_usuario': 'tu_contraseña',
     'otro_usuario': 'otra_contraseña'
 };
-```
-
-### Cambiar URL del Formulario
-
-Modifica la URL en `index.html` línea 45:
-
-```html
-<iframe 
-    src="TU_NUEVA_URL_AQUI"
-    frameborder="0"
-    width="100%"
-    height="800px">
-</iframe>
 ```
 
 ### Personalizar Estilos

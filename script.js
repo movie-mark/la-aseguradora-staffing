@@ -17,8 +17,6 @@ const formContainer = document.getElementById('formContainer');
 const loginForm = document.getElementById('loginForm');
 const errorMessage = document.getElementById('errorMessage');
 const logoutBtn = document.getElementById('logoutBtn');
-const n8nForm = document.getElementById('n8nForm');
-const iframeLoading = document.getElementById('iframeLoading');
 
 // Verificar si el usuario ya está autenticado
 document.addEventListener('DOMContentLoaded', function() {
@@ -38,24 +36,7 @@ document.addEventListener('DOMContentLoaded', function() {
             showError('Sesión expirada. Por favor, inicia sesión nuevamente.');
         }
     }
-    
-    // Debug: verificar si la URL del formulario es accesible
-    testFormUrl();
 });
-
-// Función para probar la URL del formulario
-function testFormUrl() {
-    const formUrl = 'https://strategic-masterminds.app.n8n.cloud/form/4627dba9-38c7-49d4-b9a2-ff18ae79b1d8';
-    
-    fetch(formUrl, { mode: 'no-cors' })
-        .then(() => {
-            console.log('✅ URL del formulario es accesible');
-        })
-        .catch((error) => {
-            console.log('❌ Error al acceder a la URL del formulario:', error);
-            console.log('URL:', formUrl);
-        });
-}
 
 // Manejar el envío del formulario de login
 loginForm.addEventListener('submit', function(e) {
@@ -83,7 +64,7 @@ loginForm.addEventListener('submit', function(e) {
         // Mostrar formulario
         showForm();
         
-        // Enviar datos de autenticación a n8n (JSON-friendly)
+        // Enviar datos de autenticación a n8n
         sendAuthDataToN8N(username);
     } else {
         // Registrar intento fallido
@@ -362,58 +343,6 @@ function resetForm() {
     cedulaInput.style.borderColor = '#e1e5e9';
 }
 
-// Función de prueba directa (para debug)
-async function testWebhookDirect(cedula = '1234567890') {
-    console.log('🧪 Iniciando prueba directa del webhook...');
-    
-    try {
-        const result = await sendToWebhook(cedula);
-        console.log('📊 Resultado de la prueba:', result);
-        
-        if (result.success) {
-            showSuccessMessage(result.message || 'Prueba exitosa');
-        } else {
-            showErrorMessage(result.message || 'Prueba fallida');
-        }
-        
-        return result;
-    } catch (error) {
-        console.error('❌ Error en prueba directa:', error);
-        showMessage('❌ Error en la prueba: ' + error.message, 'error');
-        return null;
-    }
-}
-
-// Hacer la función disponible globalmente para debug
-window.testWebhookDirect = testWebhookDirect;
-
-// Función para probar mensaje de error
-function testErrorMessage() {
-    console.log('🧪 Probando mensaje de error...');
-    showErrorMessage('Documento no encontrado<br><br>El número de documento <b>11111111</b><br>no está registrado en nuestra base de datos.<br><br><br><b>Sugerencias:</b><br><br>• Verifica que el número esté completo y sin puntos ni guiones.<br><br>• Intenta nuevamente o usa otro documento del titular.<br><br>• Si el problema persiste, contáctanos para ayudarte.<br><br><br><small>La Aseguradora · InsuraTech</small>');
-}
-
-// Hacer la función disponible globalmente
-window.testErrorMessage = testErrorMessage;
-
-// Función para probar webhook con cédula de error
-function testErrorWebhook() {
-    console.log('🧪 Probando webhook con cédula de error...');
-    testWebhookDirect('11111111');
-}
-
-// Hacer la función disponible globalmente
-window.testErrorWebhook = testErrorWebhook;
-
-// Función para probar el nuevo icono de warning
-function testWarningIcon() {
-    console.log('🧪 Probando icono de warning...');
-    showErrorMessage('Prueba del nuevo icono de warning ⚠️<br><br>Este es un mensaje de prueba para verificar que el icono se muestre correctamente.');
-}
-
-// Hacer la función disponible globalmente
-window.testWarningIcon = testWarningIcon;
-
 // Función para manejar estado de carga
 function setLoadingState(loading) {
     const submitBtn = document.getElementById('submitBtn');
@@ -429,8 +358,6 @@ function setLoadingState(loading) {
         cedulaInput.disabled = false;
     }
 }
-
-
 
 // Función para mostrar mensajes de error
 function showError(message) {
@@ -467,7 +394,7 @@ function logout() {
     sendLogoutDataToN8N();
 }
 
-// Función para enviar datos de autenticación a n8n (JSON-friendly)
+// Función para enviar datos de autenticación a n8n
 function sendAuthDataToN8N(username) {
     const authData = {
         event: 'user_login',
@@ -476,15 +403,6 @@ function sendAuthDataToN8N(username) {
         session_id: generateSessionId(),
         status: 'success'
     };
-    
-    // Enviar a webhook de n8n (configurar URL según tu flujo)
-    // fetch('TU_WEBHOOK_URL_AQUI', {
-    //     method: 'POST',
-    //     headers: {
-    //         'Content-Type': 'application/json',
-    //     },
-    //     body: JSON.stringify(authData)
-    // });
     
     console.log('Auth data for n8n:', authData);
 }
@@ -498,54 +416,10 @@ function sendLogoutDataToN8N() {
         status: 'success'
     };
     
-    // Enviar a webhook de n8n
-    // fetch('TU_WEBHOOK_URL_AQUI', {
-    //     method: 'POST',
-    //     headers: {
-    //         'Content-Type': 'application/json',
-    //     },
-    //     body: JSON.stringify(logoutData)
-    // });
-    
     console.log('Logout data for n8n:', logoutData);
 }
 
 // Función para generar ID de sesión
 function generateSessionId() {
     return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-}
-
-// Escuchar mensajes del iframe de n8n
-window.addEventListener('message', function(event) {
-    // Verificar origen del mensaje (n8n)
-    if (event.origin === 'https://strategic-masterminds.app.n8n.cloud') {
-        const data = event.data;
-        
-        // Procesar datos del formulario n8n
-        if (data.type === 'form_submission') {
-            handleFormSubmission(data);
-        }
-    }
-});
-
-// Función para manejar envío del formulario n8n
-function handleFormSubmission(formData) {
-    const submissionData = {
-        event: 'form_submission',
-        timestamp: new Date().toISOString(),
-        username: localStorage.getItem('username'),
-        form_data: formData,
-        session_id: localStorage.getItem('session_id')
-    };
-    
-    console.log('Form submission data for n8n:', submissionData);
-    
-    // Aquí puedes enviar los datos a tu webhook de n8n
-    // fetch('TU_WEBHOOK_URL_AQUI', {
-    //     method: 'POST',
-    //     headers: {
-    //         'Content-Type': 'application/json',
-    //     },
-    //     body: JSON.stringify(submissionData)
-    // });
 }
