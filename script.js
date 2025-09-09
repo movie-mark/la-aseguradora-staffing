@@ -2,8 +2,8 @@
 // ⚠️ ADVERTENCIA: Este es un sistema de demostración. NO usar en producción.
 const validUsers = {
     'admin': 'admin123',
-    'staff': 'staff123',
-    'user': 'user123'
+    'vincula': 'vincula5921',
+    'nomina': 'nomina7390'
 };
 
 // Rate limiting básico
