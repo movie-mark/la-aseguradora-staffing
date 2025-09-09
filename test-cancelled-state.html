@@ -26,13 +26,13 @@
                                 style="background: #28a745; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer;">
                             Éxito Real
                         </button>
-                        <button onclick="showCancelledMessage('⚠️ La póliza ya está cancelada anteriormente')" 
+                        <button onclick="testCancelledMessage()" 
                                 style="background: #ffc107; color: #212529; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer;">
-                            Cancelada
+                            Previamente Cancelada
                         </button>
-                        <button onclick="showErrorMessage('❌ Error: Cédula no encontrada')" 
+                        <button onclick="testErrorMessage()" 
                                 style="background: #dc3545; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer;">
-                            Error
+                            Documento No Encontrado
                         </button>
                     </div>
                     
@@ -113,8 +113,18 @@
         }
 
         function testSuccessMessage() {
-            const realSuccessMessage = `Póliza Cancelada con Éxito<br><br>Se actualizó la póliza asociada al documento<br><b>{{ $('Webhook').item.json.body.cedula }}</b><br>con el estado <b>"Cancelado por Staffing"</b>.<br><br><b>Fecha de actualización:</b> {{ new Date().toISOString().replace('T',' ').slice(0,19) }} UTC<br><br><br><small>La Aseguradora · InsuraTech</small>`;
+            const realSuccessMessage = `Póliza Cancelada con Éxito<br><br>Se actualizó la póliza asociada al documento<br><b>1234567890</b><br>con el estado <b>"Cancelado por Staffing"</b>.<br><br><b>Fecha de actualización:</b> 2025-01-04 13:45:30 UTC<br><br><br><small>La Aseguradora · InsuraTech</small>`;
             showSuccessMessage(realSuccessMessage);
+        }
+
+        function testCancelledMessage() {
+            const cancelledMessage = `Previamente Cancelada<br><br>La póliza asociada al documento 1234567890 ya fue cancelada anteriormente el 2025-01-01.`;
+            showCancelledMessage(cancelledMessage);
+        }
+
+        function testErrorMessage() {
+            const errorMessage = `Documento no encontrado<br><br>La cédula 1234567890 no se encuentra registrada en nuestro sistema.`;
+            showErrorMessage(errorMessage);
         }
 
         function testStates() {

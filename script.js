@@ -255,29 +255,21 @@ async function sendToWebhook(cedula) {
         console.log('  - Response Data:', responseData);
         console.log('  - Message:', responseData.message);
         
-        // Verificar el tipo de mensaje basado en el contenido
+        // Verificar el tipo de mensaje basado en frases exactas
         const messageText = responseData.message || '';
-        const isErrorMessage = messageText.toLowerCase().includes('no encontrado') || 
-                              messageText.toLowerCase().includes('error') ||
-                              messageText.toLowerCase().includes('no está registrado');
         
-        const isCancelledMessage = messageText.toLowerCase().includes('ya cancelada') || 
-                                  messageText.toLowerCase().includes('ya está cancelada') ||
-                                  messageText.toLowerCase().includes('cancelada anteriormente') ||
-                                  messageText.toLowerCase().includes('ya fue cancelada') ||
-                                  messageText.toLowerCase().includes('previamente cancelada');
+        // Detección precisa con frases exactas
+        const isSuccessMessage = messageText.includes('Póliza Cancelada con Éxito');
+        const isCancelledMessage = messageText.includes('Previamente Cancelada');
+        const isErrorMessage = messageText.includes('Documento no encontrado');
         
-        const isSuccessMessage = messageText.toLowerCase().includes('cancelada con éxito') || 
-                                messageText.toLowerCase().includes('póliza cancelada') ||
-                                messageText.toLowerCase().includes('actualizó la póliza') ||
-                                messageText.toLowerCase().includes('cancelado por staffing');
+        console.log('  - Mensaje completo:', messageText);
+        console.log('  - Contiene "Póliza Cancelada con Éxito":', isSuccessMessage);
+        console.log('  - Contiene "Previamente Cancelada":', isCancelledMessage);
+        console.log('  - Contiene "Documento no encontrado":', isErrorMessage);
         
-        console.log('  - Es mensaje de error:', isErrorMessage);
-        console.log('  - Es mensaje de cancelada:', isCancelledMessage);
-        console.log('  - Es mensaje de éxito:', isSuccessMessage);
-        
-        // Determinar el tipo de resultado
-        let resultType = 'success';
+        // Determinar el tipo de resultado basado en frases exactas
+        let resultType = 'success'; // Por defecto
         if (isErrorMessage) {
             resultType = 'error';
         } else if (isCancelledMessage) {
@@ -285,6 +277,8 @@ async function sendToWebhook(cedula) {
         } else if (isSuccessMessage) {
             resultType = 'success';
         }
+        
+        console.log('  - Tipo de resultado detectado:', resultType);
         
         return {
             success: isSuccess && !isErrorMessage,
