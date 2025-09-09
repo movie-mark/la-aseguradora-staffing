@@ -168,19 +168,24 @@ function setupCedulaForm() {
             
             console.log('🎯 Resultado final del webhook:', result);
             
-            // Verificar si tenemos un mensaje válido
+            // Verificar si tenemos un mensaje válido y mostrar según el tipo
             if (result.message && result.message.trim() !== '') {
-                if (result.success) {
+                if (result.type === 'success') {
                     console.log('✅ Mostrando mensaje de éxito:', result.message);
                     showSuccessMessage(result.message);
+                } else if (result.type === 'cancelled') {
+                    console.log('⚠️ Mostrando mensaje de póliza cancelada:', result.message);
+                    showCancelledMessage(result.message);
                 } else {
                     console.log('❌ Mostrando mensaje de error:', result.message);
                     showErrorMessage(result.message);
                 }
             } else {
                 // Fallback si no hay mensaje
-                if (result.success) {
+                if (result.type === 'success') {
                     showSuccessMessage('Póliza procesada correctamente');
+                } else if (result.type === 'cancelled') {
+                    showCancelledMessage('La póliza ya está cancelada');
                 } else {
                     showErrorMessage('Error al procesar la cédula');
                 }
@@ -250,16 +255,33 @@ async function sendToWebhook(cedula) {
         console.log('  - Response Data:', responseData);
         console.log('  - Message:', responseData.message);
         
-        // Verificar si el mensaje contiene indicadores de error
+        // Verificar el tipo de mensaje basado en el contenido
         const messageText = responseData.message || '';
         const isErrorMessage = messageText.toLowerCase().includes('no encontrado') || 
                               messageText.toLowerCase().includes('error') ||
                               messageText.toLowerCase().includes('no está registrado');
         
+        const isCancelledMessage = messageText.toLowerCase().includes('ya cancelada') || 
+                                  messageText.toLowerCase().includes('ya está cancelada') ||
+                                  messageText.toLowerCase().includes('cancelada anteriormente') ||
+                                  messageText.toLowerCase().includes('ya fue cancelada') ||
+                                  messageText.toLowerCase().includes('previamente cancelada');
+        
         console.log('  - Es mensaje de error:', isErrorMessage);
+        console.log('  - Es mensaje de cancelada:', isCancelledMessage);
+        
+        // Determinar el tipo de resultado
+        let resultType = 'success';
+        if (isErrorMessage) {
+            resultType = 'error';
+        } else if (isCancelledMessage) {
+            resultType = 'cancelled';
+        }
         
         return {
             success: isSuccess && !isErrorMessage,
+            cancelled: isCancelledMessage,
+            type: resultType,
             message: responseData.message || (isSuccess ? 'Póliza procesada correctamente' : 'Error al procesar la cédula'),
             data: responseData,
             status: response.status
@@ -307,13 +329,36 @@ function showSuccessMessage(htmlMessage) {
     messageDiv.style.display = 'block';
 }
 
+// Función para mostrar mensaje de póliza cancelada con HTML
+function showCancelledMessage(htmlMessage) {
+    console.log('🟡 Mostrando mensaje de póliza cancelada:', htmlMessage);
+    const messageDiv = document.getElementById('formMessage');
+    messageDiv.innerHTML = `
+        <div style="text-align: center; padding: 20px;">
+            <div style="font-size: 3rem; color: #ffc107; margin-bottom: 15px;">⚠️</div>
+            <div style="color: #856404; line-height: 1.6; font-weight: 500;">
+                ${htmlMessage}
+            </div>
+            <div style="margin-top: 20px;">
+                <button onclick="resetForm()" 
+                        style="background: #ffc107; color: #212529; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: 600;">
+                    Nueva Consulta
+                </button>
+            </div>
+        </div>
+    `;
+    messageDiv.className = 'form-message cancelled';
+    messageDiv.style.display = 'block';
+    console.log('🟡 Clase aplicada:', messageDiv.className);
+}
+
 // Función para mostrar mensaje de error con HTML
 function showErrorMessage(htmlMessage) {
     console.log('🔴 Mostrando mensaje de error:', htmlMessage);
     const messageDiv = document.getElementById('formMessage');
     messageDiv.innerHTML = `
         <div style="text-align: center; padding: 20px;">
-            <div style="font-size: 3rem; color: #ffc107; margin-bottom: 15px;">⚠️</div>
+            <div style="font-size: 3rem; color: #dc3545; margin-bottom: 15px;">❌</div>
             <div style="color: #721c24; line-height: 1.6;">
                 ${htmlMessage}
             </div>

@@ -356,6 +356,16 @@ body {
     color: #721c24 !important;
 }
 
+.form-message.cancelled {
+    background: #fff3cd !important;
+    color: #856404 !important;
+    border: 1px solid #ffeaa7 !important;
+}
+
+.form-message.cancelled * {
+    color: #856404 !important;
+}
+
 .form-message.info {
     background: #d1ecf1;
     color: #0c5460;

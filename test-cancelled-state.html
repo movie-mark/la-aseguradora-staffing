@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Estado Póliza Cancelada</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="form-container" style="display: block;">
+            <div class="header">
+                <h2>Test - Estados de Respuesta</h2>
+                <button onclick="testStates()" class="logout-btn">Probar Estados</button>
+            </div>
+            
+            <div class="embedded-form">
+                <div class="cedula-form">
+                    <h3>Prueba de Estados de Póliza</h3>
+                    <p style="color: #666; margin-bottom: 20px;">
+                        Haz clic en "Probar Estados" para ver los diferentes tipos de mensajes.
+                    </p>
+                    
+                    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                        <button onclick="showSuccessMessage('✅ Póliza cancelada exitosamente')" 
+                                style="background: #28a745; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer;">
+                            Éxito
+                        </button>
+                        <button onclick="showCancelledMessage('⚠️ La póliza ya está cancelada anteriormente')" 
+                                style="background: #ffc107; color: #212529; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer;">
+                            Cancelada
+                        </button>
+                        <button onclick="showErrorMessage('❌ Error: Cédula no encontrada')" 
+                                style="background: #dc3545; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer;">
+                            Error
+                        </button>
+                    </div>
+                    
+                    <div id="formMessage" class="form-message" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Incluir las funciones del script principal
+        function showSuccessMessage(htmlMessage) {
+            console.log('✅ Mostrando mensaje de éxito:', htmlMessage);
+            const messageDiv = document.getElementById('formMessage');
+            messageDiv.innerHTML = `
+                <div style="text-align: center; padding: 20px;">
+                    <div style="font-size: 3rem; color: #28a745; margin-bottom: 15px;">✅</div>
+                    <div style="color: #155724; line-height: 1.6;">
+                        ${htmlMessage}
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <button onclick="resetForm()" 
+                                style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: 600;">
+                            Nueva Consulta
+                        </button>
+                    </div>
+                </div>
+            `;
+            messageDiv.className = 'form-message success';
+            messageDiv.style.display = 'block';
+        }
+
+        function showCancelledMessage(htmlMessage) {
+            console.log('🟡 Mostrando mensaje de póliza cancelada:', htmlMessage);
+            const messageDiv = document.getElementById('formMessage');
+            messageDiv.innerHTML = `
+                <div style="text-align: center; padding: 20px;">
+                    <div style="font-size: 3rem; color: #ffc107; margin-bottom: 15px;">⚠️</div>
+                    <div style="color: #856404; line-height: 1.6; font-weight: 500;">
+                        ${htmlMessage}
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <button onclick="resetForm()" 
+                                style="background: #ffc107; color: #212529; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: 600;">
+                            Nueva Consulta
+                        </button>
+                    </div>
+                </div>
+            `;
+            messageDiv.className = 'form-message cancelled';
+            messageDiv.style.display = 'block';
+        }
+
+        function showErrorMessage(htmlMessage) {
+            console.log('🔴 Mostrando mensaje de error:', htmlMessage);
+            const messageDiv = document.getElementById('formMessage');
+            messageDiv.innerHTML = `
+                <div style="text-align: center; padding: 20px;">
+                    <div style="font-size: 3rem; color: #dc3545; margin-bottom: 15px;">❌</div>
+                    <div style="color: #721c24; line-height: 1.6;">
+                        ${htmlMessage}
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <button onclick="resetForm()" 
+                                style="background: #dc3545; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: 600;">
+                            Intentar Nuevamente
+                        </button>
+                    </div>
+                </div>
+            `;
+            messageDiv.className = 'form-message error';
+            messageDiv.style.display = 'block';
+        }
+
+        function resetForm() {
+            const messageDiv = document.getElementById('formMessage');
+            messageDiv.style.display = 'none';
+        }
+
+        function testStates() {
+            alert('Haz clic en los botones de arriba para probar cada estado de respuesta');
+        }
+    </script>
+</body>
+</html>
