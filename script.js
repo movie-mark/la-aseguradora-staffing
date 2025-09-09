@@ -267,8 +267,14 @@ async function sendToWebhook(cedula) {
                                   messageText.toLowerCase().includes('ya fue cancelada') ||
                                   messageText.toLowerCase().includes('previamente cancelada');
         
+        const isSuccessMessage = messageText.toLowerCase().includes('cancelada con éxito') || 
+                                messageText.toLowerCase().includes('póliza cancelada') ||
+                                messageText.toLowerCase().includes('actualizó la póliza') ||
+                                messageText.toLowerCase().includes('cancelado por staffing');
+        
         console.log('  - Es mensaje de error:', isErrorMessage);
         console.log('  - Es mensaje de cancelada:', isCancelledMessage);
+        console.log('  - Es mensaje de éxito:', isSuccessMessage);
         
         // Determinar el tipo de resultado
         let resultType = 'success';
@@ -276,6 +282,8 @@ async function sendToWebhook(cedula) {
             resultType = 'error';
         } else if (isCancelledMessage) {
             resultType = 'cancelled';
+        } else if (isSuccessMessage) {
+            resultType = 'success';
         }
         
         return {
@@ -310,12 +318,26 @@ function showMessage(message, type = 'info') {
 
 // Función para mostrar mensaje de éxito con HTML
 function showSuccessMessage(htmlMessage) {
+    console.log('✅ Mostrando mensaje de éxito:', htmlMessage);
+    
+    // Procesar el mensaje para reemplazar variables de N8N y mejorar el formato
+    let processedMessage = htmlMessage;
+    
+    // Reemplazar variables de N8N que no se procesaron
+    processedMessage = processedMessage.replace(/\{\{\s*\$\(['"]Webhook['"]\)\.item\.json\.body\.cedula\s*\}\}/g, 'la cédula ingresada');
+    processedMessage = processedMessage.replace(/\{\{\s*new Date\(\)\.toISOString\(\)\.replace\('T',' '\)\.slice\(0,19\)\s*\}\}/g, new Date().toISOString().replace('T',' ').slice(0,19));
+    
+    // Limpiar etiquetas HTML innecesarias y mejorar el formato
+    processedMessage = processedMessage.replace(/<br\s*\/?>/gi, '<br>');
+    processedMessage = processedMessage.replace(/<b>(.*?)<\/b>/gi, '<strong>$1</strong>');
+    processedMessage = processedMessage.replace(/<small>(.*?)<\/small>/gi, '<small style="color: #6c757d; font-size: 0.9em;">$1</small>');
+    
     const messageDiv = document.getElementById('formMessage');
     messageDiv.innerHTML = `
         <div style="text-align: center; padding: 20px;">
             <div style="font-size: 3rem; color: #28a745; margin-bottom: 15px;">✅</div>
-            <div style="color: #155724; line-height: 1.6;">
-                ${htmlMessage}
+            <div style="color: #155724; line-height: 1.6; text-align: left; max-width: 500px; margin: 0 auto;">
+                ${processedMessage}
             </div>
             <div style="margin-top: 20px;">
                 <button onclick="resetForm()" 

@@ -21,10 +21,10 @@
                         Haz clic en "Probar Estados" para ver los diferentes tipos de mensajes.
                     </p>
                     
-                    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-                        <button onclick="showSuccessMessage('✅ Póliza cancelada exitosamente')" 
+                    <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+                        <button onclick="testSuccessMessage()" 
                                 style="background: #28a745; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer;">
-                            Éxito
+                            Éxito Real
                         </button>
                         <button onclick="showCancelledMessage('⚠️ La póliza ya está cancelada anteriormente')" 
                                 style="background: #ffc107; color: #212529; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer;">
@@ -110,6 +110,11 @@
         function resetForm() {
             const messageDiv = document.getElementById('formMessage');
             messageDiv.style.display = 'none';
+        }
+
+        function testSuccessMessage() {
+            const realSuccessMessage = `Póliza Cancelada con Éxito<br><br>Se actualizó la póliza asociada al documento<br><b>{{ $('Webhook').item.json.body.cedula }}</b><br>con el estado <b>"Cancelado por Staffing"</b>.<br><br><b>Fecha de actualización:</b> {{ new Date().toISOString().replace('T',' ').slice(0,19) }} UTC<br><br><br><small>La Aseguradora · InsuraTech</small>`;
+            showSuccessMessage(realSuccessMessage);
         }
 
         function testStates() {
