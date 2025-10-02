@@ -71,6 +71,12 @@ El webhook recibirá:
 - `cedula`: Número de cédula ingresado
 - `session_id`: ID único de la sesión
 
+**Nota:** El sistema ahora soporta 4 tipos de respuesta:
+- ✅ **Success**: Póliza cancelada exitosamente
+- ⚠️ **Cancelled**: Póliza ya estaba cancelada previamente  
+- ❌ **Error**: Documento no encontrado
+- ❌ **Error (Emisión)**: Póliza en estado "En Emisión" (se muestra como error con UI roja)
+
 ### Respuestas del Webhook
 
 #### ✅ Respuesta de Éxito (HTTP 200):
@@ -86,6 +92,16 @@ El webhook recibirá:
 {
   "success": false,
   "message": "Documento no encontrado<br><br>El número de documento <b>{{ $json.cedula }}</b><br>no está registrado en nuestra base de datos.<br><br><br><b>Sugerencias:</b><br><br>• Verifica que el número esté completo y sin puntos ni guiones.<br><br>• Intenta nuevamente o usa otro documento del titular.<br><br>• Si el problema persiste, contáctanos para ayudarte.<br><br><br><small>La Aseguradora · InsuraTech</small>"
+}
+```
+
+#### ⚠️ Respuesta de Póliza en Emisión (HTTP 200):
+```json
+{
+  "success": false,
+  "type": "error",
+  "code": "POLIZA_EN_EMISION",
+  "message": "Póliza en Emisión<br><br>La póliza asociada al documento<br><b>{{ $json.cedula }}</b><br>se encuentra en estado <b>\"En Emisión\"</b> y el usuario fue inscrito hace más de 30 días.<br><br><b>Acción recomendada:</b> Comuníquese con la Aseguradora de inmediato.<br><br><b>Fecha de verificación:</b> {{ new Date().toISOString().replace('T',' ').slice(0,19) }} UTC<br><br><br><small>La Aseguradora · InsuraTech</small>"
 }
 ```
 

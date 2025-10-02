@@ -245,46 +245,61 @@ async function sendToWebhook(cedula) {
             responseData = { message: textResponse };
         }
         
-        // Determinar si es éxito o error basado en el status code
-        const isSuccess = response.ok;
+        // Determinar si es éxito basado en el contrato JSON o status code
+        const bodySuccess = typeof responseData.success === 'boolean' ? responseData.success : response.ok;
         
         // Debug: Log detallado de la respuesta
         console.log('🔍 Debug de respuesta:');
         console.log('  - Status:', response.status);
         console.log('  - OK:', response.ok);
         console.log('  - Response Data:', responseData);
+        console.log('  - Success from body:', responseData.success);
+        console.log('  - Type from body:', responseData.type);
+        console.log('  - Code from body:', responseData.code);
         console.log('  - Message:', responseData.message);
         
-        // Verificar el tipo de mensaje basado en frases exactas
-        const messageText = responseData.message || '';
+        // Determinar el tipo usando el contrato JSON primero, luego fallback por frases
+        let resultType = responseData.type;
         
-        // Detección precisa con frases exactas
-        const isSuccessMessage = messageText.includes('Póliza Cancelada con Éxito');
-        const isCancelledMessage = messageText.includes('Previamente Cancelada');
-        const isErrorMessage = messageText.includes('Documento no encontrado');
+        if (!resultType) {
+            // Fallback: verificar el tipo de mensaje basado en frases exactas
+            const messageText = (responseData.message || '').toLowerCase();
+            
+            const hasSuccess = messageText.includes('póliza cancelada con éxito');
+            const hasCancelled = messageText.includes('previamente cancelada');
+            const hasNotFound = messageText.includes('documento no encontrado');
+            const hasEmision = messageText.includes('póliza en emisión');
+            
+            console.log('  - Mensaje completo:', messageText);
+            console.log('  - Contiene "póliza cancelada con éxito":', hasSuccess);
+            console.log('  - Contiene "previamente cancelada":', hasCancelled);
+            console.log('  - Contiene "documento no encontrado":', hasNotFound);
+            console.log('  - Contiene "póliza en emisión":', hasEmision);
+            
+            // Determinar el tipo de resultado basado en frases exactas
+            if (hasNotFound || hasEmision) {
+                resultType = 'error';
+            } else if (hasCancelled) {
+                resultType = 'cancelled';
+            } else if (hasSuccess) {
+                resultType = 'success';
+            } else {
+                resultType = 'success'; // Por defecto
+            }
+        }
         
-        console.log('  - Mensaje completo:', messageText);
-        console.log('  - Contiene "Póliza Cancelada con Éxito":', isSuccessMessage);
-        console.log('  - Contiene "Previamente Cancelada":', isCancelledMessage);
-        console.log('  - Contiene "Documento no encontrado":', isErrorMessage);
-        
-        // Determinar el tipo de resultado basado en frases exactas
-        let resultType = 'success'; // Por defecto
-        if (isErrorMessage) {
+        // Override por código específico
+        if (responseData.code === 'POLIZA_EN_EMISION') {
             resultType = 'error';
-        } else if (isCancelledMessage) {
-            resultType = 'cancelled';
-        } else if (isSuccessMessage) {
-            resultType = 'success';
         }
         
         console.log('  - Tipo de resultado detectado:', resultType);
         
         return {
-            success: isSuccess && !isErrorMessage,
-            cancelled: isCancelledMessage,
+            success: bodySuccess && resultType !== 'error',
+            cancelled: resultType === 'cancelled',
             type: resultType,
-            message: responseData.message || (isSuccess ? 'Póliza procesada correctamente' : 'Error al procesar la cédula'),
+            message: responseData.message || (bodySuccess ? 'Póliza procesada correctamente' : 'Error al procesar la cédula'),
             data: responseData,
             status: response.status
         };
